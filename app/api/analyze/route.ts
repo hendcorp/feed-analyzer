@@ -389,7 +389,7 @@ export async function POST(request: NextRequest) {
           guidMap.set(guid, (guidMap.get(guid) || 0) + 1);
         }
       }
-      for (const [guid, count] of guidMap.entries()) {
+      for (const [guid, count] of Array.from(guidMap.entries())) {
         if (count > 1) {
           duplicateGuids.push(guid);
         }
