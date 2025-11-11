@@ -328,6 +328,158 @@ export async function POST(request: NextRequest) {
     // Get the number of items in the feed
     const itemCount = feed.items ? feed.items.length : 0;
 
+    // 1. Feed Type Detection
+    let feedType: string = 'Unknown';
+    if (xmlContent.includes('<rss')) {
+      const rssMatch = xmlContent.match(/<rss[^>]*version=["']([^"']+)["']/i);
+      if (rssMatch && rssMatch[1]) {
+        feedType = rssMatch[1] === '2.0' ? 'RSS 2.0' : `RSS ${rssMatch[1]}`;
+      } else {
+        feedType = 'RSS 2.0'; // Default assumption
+      }
+    } else if (xmlContent.includes('<feed') && xmlContent.includes('xmlns="http://www.w3.org/2005/Atom"')) {
+      feedType = 'Atom';
+    } else if (xmlContent.includes('<rdf:RDF')) {
+      feedType = 'RDF';
+    }
+
+    // 2. Post Frequency Estimation
+    let postFrequency: string | null = null;
+    if (feed.items && feed.items.length > 1) {
+      const dates: Date[] = [];
+      for (const item of feed.items) {
+        if (item.pubDate) {
+          const date = new Date(item.pubDate);
+          if (!isNaN(date.getTime())) {
+            dates.push(date);
+          }
+        }
+      }
+      
+      if (dates.length > 1) {
+        dates.sort((a, b) => a.getTime() - b.getTime());
+        const timeDiff = dates[dates.length - 1].getTime() - dates[0].getTime();
+        const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
+        const avgDaysBetween = daysDiff / (dates.length - 1);
+        
+        if (avgDaysBetween < 0.1) {
+          postFrequency = 'Multiple posts per day';
+        } else if (avgDaysBetween < 1) {
+          const perDay = 1 / avgDaysBetween;
+          postFrequency = `~${Math.round(perDay * 10) / 10} posts per day`;
+        } else if (avgDaysBetween < 7) {
+          const perWeek = 7 / avgDaysBetween;
+          postFrequency = `~${Math.round(perWeek * 10) / 10} posts per week`;
+        } else if (avgDaysBetween < 30) {
+          const perMonth = 30 / avgDaysBetween;
+          postFrequency = `~${Math.round(perMonth * 10) / 10} posts per month`;
+        } else {
+          postFrequency = 'Less than 1 post per month';
+        }
+      }
+    }
+
+    // 3. Duplicate GUID Warning
+    const duplicateGuids: string[] = [];
+    if (feed.items && feed.items.length > 0) {
+      const guidMap = new Map<string, number>();
+      for (const item of feed.items) {
+        const guid = item.guid || item.link || '';
+        if (guid) {
+          guidMap.set(guid, (guidMap.get(guid) || 0) + 1);
+        }
+      }
+      for (const [guid, count] of guidMap.entries()) {
+        if (count > 1) {
+          duplicateGuids.push(guid);
+        }
+      }
+    }
+
+    // 4. Missing Essential Fields
+    const missingFields: string[] = [];
+    if (feed.items && feed.items.length > 0) {
+      const firstItem = feed.items[0];
+      if (!firstItem.title) missingFields.push('title');
+      if (!firstItem.link) missingFields.push('link');
+      if (!firstItem.description && !firstItem.content) missingFields.push('description');
+    }
+
+    // 5. Featured Image Source Breakdown
+    const imageSources = {
+      mediaContent: 0,
+      enclosure: 0,
+      imgTag: 0,
+      openGraph: 0,
+    };
+    const imageUrls: string[] = [];
+    
+    if (feed.items && feed.items.length > 0) {
+      for (const item of feed.items) {
+        // Check media:content
+        if ((item as any).mediaContent) {
+          imageSources.mediaContent++;
+          const mediaContent = (item as any).mediaContent;
+          if (typeof mediaContent === 'object' && mediaContent.url) {
+            imageUrls.push(mediaContent.url);
+          } else if (typeof mediaContent === 'string') {
+            const match = mediaContent.match(/url=["']([^"']+)["']/i);
+            if (match) imageUrls.push(match[1]);
+          }
+        }
+        
+        // Check enclosure
+        if (item.enclosure && item.enclosure.type?.startsWith('image/')) {
+          imageSources.enclosure++;
+          if (item.enclosure.url) imageUrls.push(item.enclosure.url);
+        }
+        
+        // Check img tags in content
+        const content = (item as any).contentEncoded || item.content || item.description || '';
+        if (content.includes('<img')) {
+          imageSources.imgTag++;
+          const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i);
+          if (imgMatch && imgMatch[1]) {
+            imageUrls.push(imgMatch[1]);
+          }
+        }
+        
+        // Check for Open Graph tags (basic check)
+        if (content.includes('og:image') || content.includes('property="og:image"')) {
+          imageSources.openGraph++;
+        }
+      }
+    }
+
+    // 6. Image Resolution Check (sample first 2 images)
+    const imageResolutions: Array<{ url: string; width?: number; height?: number; error?: string }> = [];
+    const sampleImages = imageUrls.slice(0, 2);
+    
+    for (const imgUrl of sampleImages) {
+      try {
+        // Try to get image dimensions using HEAD request or fetch
+        const imgResponse = await fetch(imgUrl, {
+          method: 'HEAD',
+          signal: AbortSignal.timeout(5000),
+        }).catch(() => null);
+        
+        if (imgResponse && imgResponse.ok) {
+          const contentType = imgResponse.headers.get('content-type');
+          if (contentType?.startsWith('image/')) {
+            // For actual dimensions, we'd need to load the image, but that's expensive
+            // So we'll just note that the URL is accessible
+            imageResolutions.push({ url: imgUrl });
+          } else {
+            imageResolutions.push({ url: imgUrl, error: 'Not an image' });
+          }
+        } else {
+          imageResolutions.push({ url: imgUrl, error: 'Unable to fetch' });
+        }
+      } catch (error) {
+        imageResolutions.push({ url: imgUrl, error: 'Fetch failed' });
+      }
+    }
+
     return NextResponse.json({
       isValid: true,
       title: feed.title || 'Untitled Feed',
@@ -336,6 +488,12 @@ export async function POST(request: NextRequest) {
       contentType,
       lastUpdate,
       itemCount,
+      feedType,
+      postFrequency,
+      duplicateGuids: duplicateGuids.length > 0 ? duplicateGuids : undefined,
+      missingFields: missingFields.length > 0 ? missingFields : undefined,
+      imageSources,
+      imageResolutions: imageResolutions.length > 0 ? imageResolutions : undefined,
     });
   } catch (error: any) {
     let errorMessage = 'Failed to parse RSS feed';
