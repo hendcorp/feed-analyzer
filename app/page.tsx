@@ -8,6 +8,7 @@ interface FeedAnalysis {
   availableFields: string[];
   hasFeaturedImage: boolean;
   contentType: 'full' | 'excerpt' | 'unknown';
+  lastUpdate?: string | null;
   error?: string;
 }
 
@@ -203,6 +204,22 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
+
+                {result.lastUpdate && (
+                  <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">🕒</span>
+                      <div>
+                        <h3 className="font-semibold text-gray-700 mb-1">
+                          Last Update
+                        </h3>
+                        <p className="text-gray-800 text-lg">
+                          {result.lastUpdate}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ) : (

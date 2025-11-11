@@ -277,6 +277,8 @@ export async function POST(request: NextRequest) {
 
     // Determine content type (full article vs excerpt)
     let contentType: 'full' | 'excerpt' | 'unknown' = 'unknown';
+    let lastUpdate: string | null = null;
+    
     if (feed.items && feed.items.length > 0) {
       const firstItem = feed.items[0];
       const content =
@@ -292,6 +294,35 @@ export async function POST(request: NextRequest) {
       } else if (contentLength > 0) {
         contentType = 'excerpt';
       }
+
+      // Get the latest item's publication date (RSS feeds are usually sorted newest first)
+      // Try to find the most recent date among all items
+      let latestDate: Date | null = null;
+      for (const item of feed.items) {
+        if (item.pubDate) {
+          const itemDate = new Date(item.pubDate);
+          if (!isNaN(itemDate.getTime())) {
+            if (!latestDate || itemDate > latestDate) {
+              latestDate = itemDate;
+            }
+          }
+        }
+      }
+
+      if (latestDate) {
+        // Format date in a human-friendly way
+        lastUpdate = latestDate.toLocaleString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          timeZoneName: 'short',
+        });
+      } else if (firstItem.pubDate) {
+        // Fallback: try to format the first item's date even if parsing failed
+        lastUpdate = firstItem.pubDate;
+      }
     }
 
     return NextResponse.json({
@@ -300,6 +331,7 @@ export async function POST(request: NextRequest) {
       availableFields: Array.from(availableFields).sort(),
       hasFeaturedImage,
       contentType,
+      lastUpdate,
     });
   } catch (error: any) {
     let errorMessage = 'Failed to parse RSS feed';
