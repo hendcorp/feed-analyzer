@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
         availableFields.add('categories');
       if (firstItem.pubDate) availableFields.add('pubDate');
       if (firstItem.creator) availableFields.add('creator');
-      if (firstItem.author) availableFields.add('author');
+      if ((firstItem as any).author) availableFields.add('author');
       if (firstItem.guid) availableFields.add('guid');
 
       // Check for custom fields
