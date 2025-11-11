@@ -373,14 +373,26 @@ export async function POST(request: NextRequest) {
         if (avgDaysBetween < 0.1) {
           postFrequency = 'Multiple posts per day';
         } else if (avgDaysBetween < 1) {
-          const perDay = 1 / avgDaysBetween;
-          postFrequency = `~${Math.round(perDay * 10) / 10} posts per day`;
+          const perDay = Math.round(1 / avgDaysBetween);
+          if (perDay === 1) {
+            postFrequency = '1 post per day';
+          } else {
+            postFrequency = `${perDay} posts per day`;
+          }
         } else if (avgDaysBetween < 7) {
-          const perWeek = 7 / avgDaysBetween;
-          postFrequency = `~${Math.round(perWeek * 10) / 10} posts per week`;
+          const perWeek = Math.round(7 / avgDaysBetween);
+          if (perWeek === 1) {
+            postFrequency = '1 post per week';
+          } else {
+            postFrequency = `${perWeek} posts per week`;
+          }
         } else if (avgDaysBetween < 30) {
-          const perMonth = 30 / avgDaysBetween;
-          postFrequency = `~${Math.round(perMonth * 10) / 10} posts per month`;
+          const perMonth = Math.round(30 / avgDaysBetween);
+          if (perMonth === 1) {
+            postFrequency = '1 post per month';
+          } else {
+            postFrequency = `${perMonth} posts per month`;
+          }
         } else {
           postFrequency = 'Less than 1 post per month';
         }
