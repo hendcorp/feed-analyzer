@@ -17,13 +17,15 @@ export default function Home() {
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<FeedAnalysis | null>(null);
+  const [hasShownResult, setHasShownResult] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url.trim()) return;
 
     setLoading(true);
-    setResult(null);
+    // Don't clear result immediately - keep showing previous result while loading
+    // setResult(null);
 
     try {
       const response = await fetch('/api/analyze', {
@@ -36,6 +38,7 @@ export default function Home() {
 
       const analysis = await response.json();
       setResult(analysis);
+      setHasShownResult(true);
     } catch (error) {
       setResult({
         isValid: false,
@@ -44,6 +47,7 @@ export default function Home() {
         contentType: 'unknown',
         error: 'An unexpected error occurred',
       });
+      setHasShownResult(true);
     } finally {
       setLoading(false);
     }
@@ -51,7 +55,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-white">
-      {!result ? (
+      {!hasShownResult ? (
         // Initial centered layout
         <div className="container mx-auto px-6 py-16 max-w-5xl">
           <div className="text-center mb-16">
@@ -188,7 +192,33 @@ export default function Home() {
           {/* Right Content - 75% */}
           <div className="flex-1 overflow-y-auto bg-white">
             <div className="p-8">
-            {result.isValid ? (
+            {loading && !result ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="text-center">
+                  <svg
+                    className="animate-spin mx-auto h-8 w-8 text-primary-500 mb-4"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  <p className="text-gray-500">Analyzing feed...</p>
+                </div>
+              </div>
+            ) : result && result.isValid ? (
               <div>
                 <div className="flex items-center gap-3 mb-8 pb-6 border-b border-gray-100">
                   <div className="flex-shrink-0 w-10 h-10 bg-success-50 rounded-full flex items-center justify-center">
@@ -306,7 +336,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            ) : (
+            ) : result ? (
               <div>
                 <div className="flex items-start gap-4">
                   <div className="flex-shrink-0 w-10 h-10 bg-red-50 rounded-full flex items-center justify-center">
@@ -332,7 +362,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            )}
+            ) : null}
             </div>
           </div>
         </div>
