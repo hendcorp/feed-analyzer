@@ -190,6 +190,7 @@ export async function POST(request: NextRequest) {
       customFields: {
         item: [
           ['media:content', 'mediaContent'],
+          ['media:thumbnail', 'mediaThumbnail'],
           ['content:encoded', 'contentEncoded'],
           ['description', 'description'],
         ],
@@ -230,6 +231,7 @@ export async function POST(request: NextRequest) {
       if ((firstItem as any).contentEncoded)
         availableFields.add('content:encoded');
       if ((firstItem as any).mediaContent) availableFields.add('media:content');
+      if ((firstItem as any).mediaThumbnail) availableFields.add('media:thumbnail');
       if (firstItem.enclosure) availableFields.add('enclosure');
 
       // Check for image tags
@@ -242,6 +244,12 @@ export async function POST(request: NextRequest) {
       for (const item of feed.items) {
         // Check media:content
         if ((item as any).mediaContent) {
+          hasFeaturedImage = true;
+          break;
+        }
+
+        // Check media:thumbnail
+        if ((item as any).mediaThumbnail) {
           hasFeaturedImage = true;
           break;
         }
@@ -408,11 +416,24 @@ export async function POST(request: NextRequest) {
     // 5. Featured Image Source Breakdown
     const imageSources = {
       mediaContent: 0,
+      mediaThumbnail: 0,
       enclosure: 0,
       imgTag: 0,
       openGraph: 0,
     };
     const imageUrls: string[] = [];
+    
+    // Check XML directly for media:thumbnail tags
+    const mediaThumbnailMatches = Array.from(xmlContent.matchAll(/<media:thumbnail[^>]*>/gi));
+    if (mediaThumbnailMatches.length > 0) {
+      imageSources.mediaThumbnail = mediaThumbnailMatches.length;
+      for (const match of mediaThumbnailMatches) {
+        const urlMatch = match[0].match(/url=["']([^"']+)["']/i);
+        if (urlMatch && urlMatch[1]) {
+          imageUrls.push(urlMatch[1]);
+        }
+      }
+    }
     
     if (feed.items && feed.items.length > 0) {
       for (const item of feed.items) {
@@ -428,10 +449,32 @@ export async function POST(request: NextRequest) {
           }
         }
         
+        // Check media:thumbnail (parsed version)
+        if ((item as any).mediaThumbnail) {
+          // Only count if not already counted from XML
+          if (imageSources.mediaThumbnail === 0) {
+            imageSources.mediaThumbnail++;
+          }
+          const mediaThumbnail = (item as any).mediaThumbnail;
+          if (typeof mediaThumbnail === 'object' && mediaThumbnail.url) {
+            if (!imageUrls.includes(mediaThumbnail.url)) {
+              imageUrls.push(mediaThumbnail.url);
+            }
+          } else if (typeof mediaThumbnail === 'string') {
+            // Extract URL from media:thumbnail tag (e.g., url="...")
+            const match = mediaThumbnail.match(/url=["']([^"']+)["']/i);
+            if (match && !imageUrls.includes(match[1])) {
+              imageUrls.push(match[1]);
+            }
+          }
+        }
+        
         // Check enclosure
         if (item.enclosure && item.enclosure.type?.startsWith('image/')) {
           imageSources.enclosure++;
-          if (item.enclosure.url) imageUrls.push(item.enclosure.url);
+          if (item.enclosure.url && !imageUrls.includes(item.enclosure.url)) {
+            imageUrls.push(item.enclosure.url);
+          }
         }
         
         // Check img tags in content
@@ -439,7 +482,7 @@ export async function POST(request: NextRequest) {
         if (content.includes('<img')) {
           imageSources.imgTag++;
           const imgMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i);
-          if (imgMatch && imgMatch[1]) {
+          if (imgMatch && imgMatch[1] && !imageUrls.includes(imgMatch[1])) {
             imageUrls.push(imgMatch[1]);
           }
         }

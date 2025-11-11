@@ -16,6 +16,7 @@ interface FeedAnalysis {
   missingFields?: string[];
   imageSources?: {
     mediaContent: number;
+    mediaThumbnail: number;
     enclosure: number;
     imgTag: number;
     openGraph: number;
@@ -474,6 +475,12 @@ export default function Home() {
                             <span className="text-gray-500">({result.imageSources.mediaContent} items)</span>
                           </div>
                         )}
+                        {result.imageSources.mediaThumbnail > 0 && (
+                          <div className="flex items-center gap-2 text-sm">
+                            <span className="text-gray-900 font-light">&lt;media:thumbnail&gt;</span>
+                            <span className="text-gray-500">({result.imageSources.mediaThumbnail} items)</span>
+                          </div>
+                        )}
                         {result.imageSources.enclosure > 0 && (
                           <div className="flex items-center gap-2 text-sm">
                             <span className="text-gray-900 font-light">&lt;enclosure&gt;</span>
@@ -492,7 +499,7 @@ export default function Home() {
                             <span className="text-gray-500">({result.imageSources.openGraph} items)</span>
                           </div>
                         )}
-                        {result.imageSources.mediaContent === 0 && result.imageSources.enclosure === 0 && result.imageSources.imgTag === 0 && result.imageSources.openGraph === 0 && (
+                        {result.imageSources.mediaContent === 0 && result.imageSources.mediaThumbnail === 0 && result.imageSources.enclosure === 0 && result.imageSources.imgTag === 0 && result.imageSources.openGraph === 0 && (
                           <p className="text-sm text-gray-500">No image sources detected</p>
                         )}
                       </div>
