@@ -46,16 +46,16 @@ function ImageWithDimensions({ url }: { url: string }) {
 
   return (
     <div className="space-y-2">
-      <div className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-100 min-h-[200px] max-h-[400px] flex items-center justify-center p-2">
+      <div className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-100 aspect-video w-full">
         {loading ? (
-          <div className="text-gray-400 text-sm">Loading...</div>
+          <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">Loading...</div>
         ) : error ? (
-          <div className="text-orange-600 text-sm">{error}</div>
+          <div className="absolute inset-0 flex items-center justify-center text-orange-600 text-sm">{error}</div>
         ) : (
           <img
             src={url}
             alt="Sample from feed"
-            className="max-w-full max-h-full w-auto h-auto object-contain rounded"
+            className="w-full h-full object-cover"
             loading="lazy"
           />
         )}
