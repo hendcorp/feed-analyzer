@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Parser from 'rss-parser';
 
+// Configure runtime for Vercel
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     const { url } = await request.json();
@@ -8,6 +11,16 @@ export async function POST(request: NextRequest) {
     if (!url || typeof url !== 'string') {
       return NextResponse.json(
         { error: 'Invalid URL provided' },
+        { status: 400 }
+      );
+    }
+
+    // Validate URL format
+    try {
+      new URL(url);
+    } catch {
+      return NextResponse.json(
+        { error: 'Invalid URL format' },
         { status: 400 }
       );
     }
@@ -20,6 +33,8 @@ export async function POST(request: NextRequest) {
           ['description', 'description'],
         ],
       },
+      timeout: 20000, // 20 second timeout
+      maxRedirects: 5,
     });
 
     const feed = await parser.parseURL(url);
@@ -126,13 +141,29 @@ export async function POST(request: NextRequest) {
       contentType,
     });
   } catch (error: any) {
+    let errorMessage = 'Failed to parse RSS feed';
+    
+    if (error.message) {
+      if (error.message.includes('timeout')) {
+        errorMessage = 'Request timed out. The feed may be slow or unavailable.';
+      } else if (error.message.includes('ENOTFOUND') || error.message.includes('getaddrinfo')) {
+        errorMessage = 'Could not reach the feed URL. Please check if the URL is correct.';
+      } else if (error.message.includes('404')) {
+        errorMessage = 'Feed not found (404). Please check if the URL is correct.';
+      } else if (error.message.includes('CORS') || error.message.includes('Access-Control')) {
+        errorMessage = 'CORS error. The feed server may be blocking requests.';
+      } else {
+        errorMessage = error.message;
+      }
+    }
+
     return NextResponse.json(
       {
         isValid: false,
         availableFields: [],
         hasFeaturedImage: false,
         contentType: 'unknown',
-        error: error.message || 'Failed to parse RSS feed',
+        error: errorMessage,
       },
       { status: 200 } // Return 200 so we can show the error in UI
     );
