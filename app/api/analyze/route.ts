@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Parser from 'rss-parser';
 
-// Configure runtime for Vercel
+// Configure runtime and timeout for Vercel
 export const runtime = 'nodejs';
+export const maxDuration = 30; // 30 seconds max for Vercel
 
 export async function POST(request: NextRequest) {
   try {
