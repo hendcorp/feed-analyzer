@@ -75,14 +75,14 @@ export default function Home() {
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               placeholder="https://example.com/feed.xml"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all"
               disabled={loading}
             />
           </div>
           <button
             type="submit"
             disabled={loading || !url.trim()}
-            className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold py-3 px-6 rounded-lg hover:from-primary-600 hover:to-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
+            className="w-full bg-primary-500 text-white font-semibold py-3 px-6 rounded-lg hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-md hover:shadow-lg"
           >
             {loading ? (
               <span className="flex items-center justify-center">
@@ -120,9 +120,9 @@ export default function Home() {
           {result.isValid ? (
             <div className="space-y-6">
               <div className="flex items-center gap-3">
-                <div className="flex-shrink-0 w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <div className="flex-shrink-0 w-12 h-12 bg-success-100 rounded-full flex items-center justify-center">
                   <svg
-                    className="w-6 h-6 text-green-600"
+                    className="w-6 h-6 text-success-700"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -141,7 +141,7 @@ export default function Home() {
               </div>
 
               <div className="grid gap-4 md:grid-cols-2">
-                <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
+                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                   <div className="flex items-start gap-3">
                     <span className="text-2xl">📰</span>
                     <div>
@@ -153,7 +153,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="bg-purple-50 rounded-xl p-6 border border-purple-100">
+                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                   <div className="flex items-start gap-3">
                     <span className="text-2xl">🏷️</span>
                     <div className="flex-1">
@@ -164,7 +164,7 @@ export default function Home() {
                         {result.availableFields.map((field) => (
                           <span
                             key={field}
-                            className="px-3 py-1 bg-white rounded-full text-sm text-gray-700 border border-purple-200"
+                            className="px-3 py-1 bg-white rounded-full text-sm text-gray-700 border border-gray-300"
                           >
                             {field}
                           </span>
@@ -174,7 +174,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="bg-pink-50 rounded-xl p-6 border border-pink-100">
+                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                   <div className="flex items-start gap-3">
                     <span className="text-2xl">🖼️</span>
                     <div>
@@ -188,7 +188,7 @@ export default function Home() {
                   </div>
                 </div>
 
-                <div className="bg-green-50 rounded-xl p-6 border border-green-100">
+                <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                   <div className="flex items-start gap-3">
                     <span className="text-2xl">📖</span>
                     <div>
@@ -207,7 +207,7 @@ export default function Home() {
                 </div>
 
                 {result.lastUpdate && (
-                  <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
+                  <div className="bg-primary-50 rounded-xl p-6 border border-primary-200">
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">🕒</span>
                       <div>
@@ -223,7 +223,7 @@ export default function Home() {
                 )}
 
                 {result.itemCount !== undefined && (
-                  <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                  <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">📊</span>
                       <div>
