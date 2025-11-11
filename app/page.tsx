@@ -348,52 +348,52 @@ export default function Home() {
                 </div>
 
                 {/* Additional Analysis Sections */}
-                <div className="mt-12 space-y-8">
+                <div className="mt-12 grid gap-6 md:grid-cols-2">
                   {/* Feed Type Detection */}
                   {result.feedType && (
-                    <div className="border-t border-gray-100 pt-8">
+                    <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
                       <div className="flex items-center gap-2 mb-4">
                         <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
                         <h3 className="text-sm font-medium text-gray-700 uppercase tracking-wide">Feed Type Detection</h3>
                       </div>
-                      <p className="text-gray-900 font-light">{result.feedType}</p>
-                      <p className="text-sm text-gray-500 mt-1">Different feed types may behave differently during import.</p>
+                      <p className="text-gray-900 font-light text-lg mb-1">{result.feedType}</p>
+                      <p className="text-sm text-gray-500">Different feed types may behave differently during import.</p>
                     </div>
                   )}
 
                   {/* Post Frequency Estimation */}
                   {result.postFrequency && (
-                    <div className="border-t border-gray-100 pt-8">
+                    <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
                       <div className="flex items-center gap-2 mb-4">
                         <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <h3 className="text-sm font-medium text-gray-700 uppercase tracking-wide">Post Frequency Estimation</h3>
                       </div>
-                      <p className="text-gray-900 font-light">{result.postFrequency}</p>
-                      <p className="text-sm text-gray-500 mt-1">Calculated based on publication date gaps in the feed.</p>
+                      <p className="text-gray-900 font-light text-lg mb-1">{result.postFrequency}</p>
+                      <p className="text-sm text-gray-500">Calculated based on publication date gaps in the feed.</p>
                     </div>
                   )}
 
                   {/* Duplicate GUID Warning */}
                   {result.duplicateGuids && result.duplicateGuids.length > 0 && (
-                    <div className="border-t border-gray-100 pt-8">
+                    <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
                       <div className="flex items-center gap-2 mb-4">
                         <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                         </svg>
                         <h3 className="text-sm font-medium text-gray-700 uppercase tracking-wide">Duplicate GUID Warning</h3>
                       </div>
-                      <p className="text-orange-600 font-light mb-2">Found {result.duplicateGuids.length} duplicate GUID{result.duplicateGuids.length > 1 ? 's' : ''}</p>
-                      <p className="text-sm text-gray-500">This may cause duplicate imports. Consider checking the feed source.</p>
+                      <p className="text-orange-600 font-light text-lg mb-2">Found {result.duplicateGuids.length} duplicate GUID{result.duplicateGuids.length > 1 ? 's' : ''}</p>
+                      <p className="text-sm text-gray-600">This may cause duplicate imports. Consider checking the feed source.</p>
                     </div>
                   )}
 
                   {/* Missing Essential Fields */}
                   {result.missingFields && result.missingFields.length > 0 && (
-                    <div className="border-t border-gray-100 pt-8">
+                    <div className="bg-orange-50 rounded-xl p-6 border border-orange-100">
                       <div className="flex items-center gap-2 mb-4">
                         <svg className="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -402,18 +402,18 @@ export default function Home() {
                       </div>
                       <div className="flex flex-wrap gap-2 mb-2">
                         {result.missingFields.map((field) => (
-                          <span key={field} className="px-2.5 py-1 bg-orange-50 text-orange-700 rounded text-xs font-mono">
+                          <span key={field} className="px-2.5 py-1 bg-white text-orange-700 rounded text-xs font-mono border border-orange-200">
                             {field}
                           </span>
                         ))}
                       </div>
-                      <p className="text-sm text-gray-500">These fields are missing and may cause incomplete imports.</p>
+                      <p className="text-sm text-gray-600">These fields are missing and may cause incomplete imports.</p>
                     </div>
                   )}
 
                   {/* Featured Image Source Breakdown */}
                   {result.imageSources && (
-                    <div className="border-t border-gray-100 pt-8">
+                    <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
                       <div className="flex items-center gap-2 mb-4">
                         <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -454,7 +454,7 @@ export default function Home() {
 
                   {/* Image Resolution Check */}
                   {result.imageResolutions && result.imageResolutions.length > 0 && (
-                    <div className="border-t border-gray-100 pt-8">
+                    <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
                       <div className="flex items-center gap-2 mb-4">
                         <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
