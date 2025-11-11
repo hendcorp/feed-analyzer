@@ -56,7 +56,7 @@ async function validateFeedXML(xmlContent: string, url: string): Promise<{ isVal
           errors.push('RSS feed should contain at least one <item> element');
         } else {
           // Validate items have required elements (title or description)
-          const itemMatches = xmlContent.matchAll(/<item[^>]*>([\s\S]*?)<\/item>/gi);
+          const itemMatches = Array.from(xmlContent.matchAll(/<item[^>]*>([\s\S]*?)<\/item>/gi));
           let itemCount = 0;
           for (const itemMatch of itemMatches) {
             itemCount++;
