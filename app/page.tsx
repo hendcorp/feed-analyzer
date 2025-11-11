@@ -46,7 +46,7 @@ function ImageWithDimensions({ url }: { url: string }) {
 
   return (
     <div className="space-y-2">
-      <div className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-100 aspect-video flex items-center justify-center max-h-64">
+      <div className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-100 min-h-[200px] max-h-[400px] flex items-center justify-center p-2">
         {loading ? (
           <div className="text-gray-400 text-sm">Loading...</div>
         ) : error ? (
@@ -55,7 +55,7 @@ function ImageWithDimensions({ url }: { url: string }) {
           <img
             src={url}
             alt="Sample from feed"
-            className="max-w-full max-h-full w-auto h-auto object-contain"
+            className="max-w-full max-h-full w-auto h-auto object-contain rounded"
             loading="lazy"
           />
         )}
