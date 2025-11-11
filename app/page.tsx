@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface FeedAnalysis {
   isValid: boolean;
@@ -20,8 +20,55 @@ interface FeedAnalysis {
     imgTag: number;
     openGraph: number;
   };
-  imageResolutions?: Array<{ url: string; width?: number; height?: number; error?: string }>;
+  imageResolutions?: Array<{ url: string }>;
   error?: string;
+}
+
+// Component to display image with dimensions
+function ImageWithDimensions({ url }: { url: string }) {
+  const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      setDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+      setLoading(false);
+    };
+    img.onerror = () => {
+      setError('Failed to load');
+      setLoading(false);
+    };
+    img.src = url;
+  }, [url]);
+
+  return (
+    <div className="space-y-2">
+      <div className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-100 aspect-video flex items-center justify-center">
+        {loading ? (
+          <div className="text-gray-400 text-sm">Loading...</div>
+        ) : error ? (
+          <div className="text-orange-600 text-sm">{error}</div>
+        ) : (
+          <img
+            src={url}
+            alt="Sample from feed"
+            className="w-full h-full object-contain"
+            loading="lazy"
+          />
+        )}
+      </div>
+      {dimensions && (
+        <div className="text-sm text-gray-600">
+          {dimensions.width} × {dimensions.height}px
+        </div>
+      )}
+      {error && (
+        <div className="text-sm text-orange-600">{error}</div>
+      )}
+    </div>
+  );
 }
 
 export default function Home() {
@@ -461,20 +508,9 @@ export default function Home() {
                         </svg>
                         <h3 className="text-sm font-medium text-gray-700 uppercase tracking-wide">Image Resolution Check</h3>
                       </div>
-                      <div className="space-y-3">
+                      <div className="grid gap-4 md:grid-cols-2">
                         {result.imageResolutions.map((img, idx) => (
-                          <div key={idx} className="text-sm">
-                            <a href={img.url} target="_blank" rel="noopener noreferrer" className="text-primary-600 hover:text-primary-700 break-all">
-                              {img.url.length > 60 ? `${img.url.substring(0, 60)}...` : img.url}
-                            </a>
-                            {img.error ? (
-                              <span className="ml-2 text-orange-600">({img.error})</span>
-                            ) : img.width && img.height ? (
-                              <span className="ml-2 text-gray-500">{img.width} × {img.height}px</span>
-                            ) : (
-                              <span className="ml-2 text-gray-500">(Accessible)</span>
-                            )}
-                          </div>
+                          <ImageWithDimensions key={idx} url={img.url} />
                         ))}
                       </div>
                     </div>

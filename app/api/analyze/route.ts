@@ -452,32 +452,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 6. Image Resolution Check (sample first 2 images)
-    const imageResolutions: Array<{ url: string; width?: number; height?: number; error?: string }> = [];
+    // Return URLs for client-side dimension detection
+    const imageResolutions: Array<{ url: string }> = [];
     const sampleImages = imageUrls.slice(0, 2);
     
     for (const imgUrl of sampleImages) {
-      try {
-        // Try to get image dimensions using HEAD request or fetch
-        const imgResponse = await fetch(imgUrl, {
-          method: 'HEAD',
-          signal: AbortSignal.timeout(5000),
-        }).catch(() => null);
-        
-        if (imgResponse && imgResponse.ok) {
-          const contentType = imgResponse.headers.get('content-type');
-          if (contentType?.startsWith('image/')) {
-            // For actual dimensions, we'd need to load the image, but that's expensive
-            // So we'll just note that the URL is accessible
-            imageResolutions.push({ url: imgUrl });
-          } else {
-            imageResolutions.push({ url: imgUrl, error: 'Not an image' });
-          }
-        } else {
-          imageResolutions.push({ url: imgUrl, error: 'Unable to fetch' });
-        }
-      } catch (error) {
-        imageResolutions.push({ url: imgUrl, error: 'Fetch failed' });
-      }
+      imageResolutions.push({ url: imgUrl });
     }
 
     return NextResponse.json({
