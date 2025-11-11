@@ -95,6 +95,19 @@ async function validateFeedXML(xmlContent: string, url: string): Promise<{ isVal
       errors.push('Feed does not appear to be a valid RSS 2.0 or Atom feed');
     }
 
+    // Check for invalid attributes on elements (W3C validator checks)
+    // Check for filesize attribute on media:content (not valid per Media RSS spec)
+    const mediaContentMatches = Array.from(xmlContent.matchAll(/<media:content[^>]*>/gi));
+    let filesizeErrorCount = 0;
+    for (const match of mediaContentMatches) {
+      if (match[0].includes('filesize=')) {
+        filesizeErrorCount++;
+      }
+    }
+    if (filesizeErrorCount > 0) {
+      errors.push(`Unexpected filesize attribute on media:content element (${filesizeErrorCount} occurrence${filesizeErrorCount > 1 ? 's' : ''})`);
+    }
+
     // Check for well-formed XML (basic check)
     const openTags = (xmlContent.match(/<[^/!?][^>]*>/g) || []).length;
     const closeTags = (xmlContent.match(/<\/[^>]+>/g) || []).length;
