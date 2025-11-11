@@ -325,6 +325,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Get the number of items in the feed
+    const itemCount = feed.items ? feed.items.length : 0;
+
     return NextResponse.json({
       isValid: true,
       title: feed.title || 'Untitled Feed',
@@ -332,6 +335,7 @@ export async function POST(request: NextRequest) {
       hasFeaturedImage,
       contentType,
       lastUpdate,
+      itemCount,
     });
   } catch (error: any) {
     let errorMessage = 'Failed to parse RSS feed';

@@ -9,6 +9,7 @@ interface FeedAnalysis {
   hasFeaturedImage: boolean;
   contentType: 'full' | 'excerpt' | 'unknown';
   lastUpdate?: string | null;
+  itemCount?: number;
   error?: string;
 }
 
@@ -215,6 +216,22 @@ export default function Home() {
                         </h3>
                         <p className="text-gray-800 text-lg">
                           {result.lastUpdate}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {result.itemCount !== undefined && (
+                  <div className="bg-indigo-50 rounded-xl p-6 border border-indigo-100">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">📊</span>
+                      <div>
+                        <h3 className="font-semibold text-gray-700 mb-1">
+                          Number of Items
+                        </h3>
+                        <p className="text-gray-800 text-lg">
+                          {result.itemCount} {result.itemCount === 1 ? 'item' : 'items'}
                         </p>
                       </div>
                     </div>
